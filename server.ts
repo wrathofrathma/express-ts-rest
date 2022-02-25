@@ -8,17 +8,11 @@ const app = express();
 import bodyParser from 'body-parser';
 app.use(bodyParser.json());
 
-/** Import routers from ``app/routes/index`` **/
 import indexRouter from './app/routes/index';
+import authRouter from './app/routes/auth';
 
-/** Configure application to use routers **/
 app.use('/', indexRouter);
-
-/** Global Middleware Example */
-import ExampleMiddleware from './app/http/middleware/ExampleMiddleware'
-
-/** Using the middleware on all routes */
-app.use(ExampleMiddleware);
+app.use('/auth', authRouter);
 
 /** Using a custom error handler */
 import ExceptionHandler from './app/exceptions/ExceptionHandler';
