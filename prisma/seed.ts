@@ -7,7 +7,8 @@ async function generateUsers() {
     update: {},
     create: {
       email: 'alice@prisma.io',
-      name: 'Alice',
+      username: 'Alice',
+      password: 'somepass'
     },
   })
 
@@ -16,32 +17,14 @@ async function generateUsers() {
     update: {},
     create: {
       email: 'bob@prisma.io',
-      name: 'Bob',
+      username: 'Bob',
+      password: 'passsome'
     },
   })
 }
 
-async function generatePosts() {
-  // Fetch user to associate with the post.
-  const user = await prisma.user.findUnique({
-    where: {
-      email: 'bob@prisma.io'
-    }
-  });
-
-  // Create post
-  await prisma.post.create({
-    data: {
-      title: 'Hello world',
-      content: 'A very interesitng blog',
-      authorId: user.id
-    }
-  })
-
-}
 async function main() {
   await generateUsers();
-  await generatePosts();
 }
 
 main()
