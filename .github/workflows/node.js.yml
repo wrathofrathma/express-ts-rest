@@ -29,5 +29,5 @@ jobs:
     - run: npm ci
     - run: npm run build --if-present
     - run: npx prisma generate
-    - run: npx prisma migrate reset
+    - run: npx prisma migrate reset --force
     - run: npm test
