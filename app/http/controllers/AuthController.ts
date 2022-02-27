@@ -21,10 +21,8 @@ export const AuthController = {
 			}
 			// Have the auth service create the user
 			const user = await AuthService.register(username, password, email);
-			// Send the user their information / account info. 
-			res.send(user);
 			// Go to the next function in the middleware stack
-			return next();
+			return AuthController.login(req, res, next);
 		}
 		catch (e) {
 			// Catch potential errors from the auth service

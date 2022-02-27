@@ -48,11 +48,14 @@ test.group('AuthController', (group) => {
       .set( 'Accept', 'application/json')
       .expect(200)
       .then(async ({ body } ) => {
-        expect(body).toMatchObject({
-          username,
-          password,
-          email: register_email
-        });
+        // Check that the body has a token
+        expect(body).toHaveProperty("token");
+        // Extract token from the body
+        const { token } = body;
+        // Token should be truthy since it's not empty / null
+        expect(token).toBeTruthy();
+        // We should be able to validate / verify the token using jsonwebtoken. So we expect it not to throw any errors.
+        expect(() => jwt.verify(token, config.auth.signature)).not.toThrow();
         done();
       });
   }).waitForDone();
