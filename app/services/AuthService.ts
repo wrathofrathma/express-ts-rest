@@ -17,11 +17,16 @@ export const AuthService = {
 	 * @param token Authorization token attached to the HTTP header.
 	 * @return {boolean} True if their token is valid, false if it isn't.
 	 */
-	validate(token: String): boolean {
-		if (token.length != 0) {
-			return true;
+	validate(token: string): boolean {
+		// Attempt to validate the token using jsonwebtoken library and the signature we signed it with.
+		try {
+			jwt.verify(token, config.auth.signature);
 		}
-		return false;
+		catch (e) {
+			return false;
+		}
+
+		return true;
 	},
 
 	/**
