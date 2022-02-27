@@ -36,7 +36,7 @@ export const AuthService = {
 	 * @param {string} password Password
 	 * @param {string} email Email
 	 * 
-	 * @throws 
+	 * @throws ConflictException
 	 * 
 	 * @return {User} Returns the new user.
 	 */
@@ -66,7 +66,7 @@ export const AuthService = {
 	 * @param {string} email Email
 	 * @param {string} password Password
 	 * 
-	 * @throws 
+	 * @throws NotFoundException, UnprocessableEntityException
 	 * 
 	 * @return {string} JWT token containing the user's information.
 	 */
@@ -94,5 +94,24 @@ export const AuthService = {
 		else {
 			throw new UnprocessableEntity("Invalid Credentials");
 		}
+	},
+
+	/**
+	 * Fetches the user by their ID
+	 *  
+	 * @param {string} email Email
+	 * @param {string} password Password
+	 * 
+	 * @throws NotFoundException
+	 * 
+	 * @return {string} JWT token containing the user's information.
+	 */
+	async getUser(id: number) {
+		const user = await prisma.user.findUnique({
+			where: {
+				id
+			}
+		});
+		return user;
 	}
 }
