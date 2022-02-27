@@ -1,5 +1,10 @@
 import { PrismaClient, Prisma, User } from '@prisma/client'
 import ConflictException from '../exceptions/ConflictException';
+import jwt from 'jsonwebtoken';
+import { config } from '../../config';
+import UnprocessableEntity from '../exceptions/UnprocessableEntityException';
+import NotFoundException from '../exceptions/NotFoundException';
+
 const prisma = new PrismaClient()
 
 /**
@@ -47,6 +52,42 @@ export const AuthService = {
 			if (e instanceof Prisma.PrismaClientKnownRequestError) {
 				throw new ConflictException("Email address already registered.");
 			}
+		}
+	},
+
+	/**
+	 * Attempts to log in using email / password validation against the database.
+	 *  
+	 * @param {string} email Email
+	 * @param {string} password Password
+	 * 
+	 * @throws 
+	 * 
+	 * @return {string} JWT token containing the user's information.
+	 */
+	async login(email: string, password: string): Promise<string> {
+		// Find a user using their unique email address.
+		const user = await prisma.user.findUnique({
+			where: {
+				email
+			}
+		});
+
+		// If the user doesn't exist, throw an error.
+		if (!user) {
+			throw new NotFoundException();
+		}
+
+		if (user.password === password) {
+			// user is authenticated and we can make their jwt
+			// TODO how the fuck do we make this not ugly. 
+			return jwt.sign(
+				{id: user.id, email: user.email, username: user.username}, 
+				config.auth.signature, 
+				{expiresIn: config.auth.expiration});
+		}
+		else {
+			throw new UnprocessableEntity("Invalid Credentials");
 		}
 	}
 }
