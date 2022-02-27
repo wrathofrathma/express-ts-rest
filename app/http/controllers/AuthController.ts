@@ -52,7 +52,7 @@ export const AuthController = {
 			// Have the auth service create the user
 			const token = await AuthService.login(email, password);
 			// Send the user their information / account info. 
-			res.send(token);
+			res.send({token});
 			// Go to the next function in the middleware stack
 			return next();
 		}

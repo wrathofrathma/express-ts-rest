@@ -12,48 +12,55 @@ const prisma = new PrismaClient()
 
 // Grouping tests together allows us to use the lifecycle hooks to apply setup / teardown scripts en masse
 test.group('AuthService', (group) => {
-  // Inbetween tests, let's delete all of the user records we create.
-  group.each.setup(async () => {
-    await prisma.user.deleteMany({});
+  const username = "authservice";
+  const password = "MySSNForReal";
+  const wrong_password = "NotMySSN";
+  const existing_email = "as_user1@gmail.com"
+  const register_email = "as_user2@gmail.com"
+  const non_existent_email = "as_bad_user@gmail.com"
+
+  group.setup(async () => {
+    // Setup hooks needed before the tests can run. 
+    // Creating our temporary accounts
+    await prisma.user.create({
+      data:{
+        email: existing_email,
+        username,
+        password
+      }
+    })
   })
 
-  test('User Registration', async ({ expect }) => {
-    const username = "Rathma";
-    const password = "MySSNForReal";
-    const email = "rathma@kyso.dev";
-
-    const user = await AuthService.register(username, password, email);
-    expect(user).toMatchObject({
-      username,
-      password,
-      email
+  group.teardown(async () => {
+    // Teardown / cleanup hook we return here gets run after the tests all complete.
+    // Delete all accounts that match the username.
+    return await prisma.user.deleteMany({
+      where: {
+        username
+      }
     });
   });
 
-  test('User Registration Duplicate', async ({ expect }) => {
-    const username = "Rathma";
-    const password = "MySSNForReal";
-    const email = "rathma@kyso.dev";
+  test('User Registration', async ({ expect }, done: Function) => {
+    const user = await AuthService.register(username, password, register_email);
 
-    // Create the user once.
-    await AuthService.register(username, password, email);
+    expect(user).toMatchObject({
+      username,
+      password,
+      email: register_email
+    });
+  });
 
-    // Do it again, but it should fail.
-    expect(async () => {
-      await AuthService.register(username, password, email)
+  test('User Registration: Duplicate', async ({ expect }) => {
+    // Attempt to register the existing user
+    await expect(async () => {
+      await AuthService.register(username, password, existing_email)
     }).rejects.toThrow(ConflictException);
   });
 
-  test('User login', async({ expect }) => {
-    const username = "Rathma";
-    const password = "MySSNForReal";
-    const email = "rathma@kyso.dev";
-
-    // Create the user
-    await AuthService.register(username, password, email);
-
+  test('User Login', async({ expect }) => {
     // Test log in.
-    const token = await AuthService.login(email, password);
+    const token = await AuthService.login(existing_email, password);
 
     // verify the token returned is valid by making sure this doesn't throw any exceptions
     expect(() => {
@@ -61,28 +68,18 @@ test.group('AuthService', (group) => {
     }).not.toThrow();
   });
 
-  test('User invalid login credentials', async ({ expect }) => {
-    const username = "Rathma";
-    const password = "MySSNForReal";
-    const wrong_password = "Definitely not my ssn";
-    const email = ""
-
-    // Create the user
-    await AuthService.register(username, password, email);
-
+  test('User Login: Invalid Credentials', async ({ expect }, done: Function) => {
     // Test logging in using the wrong password
-    expect(async () => {
-      await AuthService.login(email, wrong_password)
+    await expect(async () => {
+      await AuthService.login(existing_email, wrong_password);
     }).rejects.toThrow(UnprocessableEntityException);
+    
   });
 
-  test('User not found', async ({ expect }) => {
-    const password = "MySSNForReal";
-    const email = ""
-
+  test('User Login: Not Found', async ({ expect }) => {
     // Test logging in (knowing there is no user in the db right now)
-    expect(async () => {
-      await AuthService.login(email, password)
+    await expect(async () => {
+      await AuthService.login(non_existent_email, password)
     }).rejects.toThrow(NotFoundException);
   });
 });
