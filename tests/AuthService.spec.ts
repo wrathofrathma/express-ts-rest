@@ -53,9 +53,12 @@ test.group('AuthService', (group) => {
 
   test('User Registration: Duplicate', async ({ expect }) => {
     // Attempt to register the existing user
-    await expect(async () => {
+    try {
       await AuthService.register(username, password, existing_email)
-    }).rejects.toThrow(ConflictException);
+    }
+    catch (e) {
+      expect(e).toBeInstanceOf(ConflictException);
+    }
   });
 
   test('User Login', async({ expect }) => {
@@ -70,16 +73,22 @@ test.group('AuthService', (group) => {
 
   test('User Login: Invalid Credentials', async ({ expect }, done: Function) => {
     // Test logging in using the wrong password
-    await expect(async () => {
+    try {
       await AuthService.login(existing_email, wrong_password);
-    }).rejects.toThrow(UnprocessableEntityException);
-    
+    }
+    catch (e) {
+      expect(e).toBeInstanceOf(UnprocessableEntityException);
+    }
   });
 
-  test('User Login: Not Found', async ({ expect }) => {
+  test('User Login: Not Found', async ({ expect }, done: Function) => {
     // Test logging in (knowing there is no user in the db right now)
-    await expect(async () => {
+    try {
       await AuthService.login(non_existent_email, password)
-    }).rejects.toThrow(NotFoundException);
-  });
+    }
+    catch (e) {
+      expect(e).toBeInstanceOf(NotFoundException);
+      done();
+    }
+  }).waitForDone();
 });
