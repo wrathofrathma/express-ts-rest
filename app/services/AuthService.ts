@@ -100,14 +100,18 @@ export const AuthService = {
 	/**
 	 * Verifies the user has access to the given object.
 	 *  
-	 * @param {string} email Email
-	 * @param {string} password Password
+	 * @param {object} resource Resource object from the database. 
+	 * @param {number} userId User id of who made the request.
 	 * 
 	 * @throws ForbiddenException
+	 * @throws NotFoundException 
 	 * 
-	 * @return {string} JWT token containing the user's information.
+	 * @return {Boolean} True if it succeeds.
 	 */
-	verifyPermissions(resource, userId: number) {
+	verifyPermissions(resource: { userId: number }, userId: number): Boolean {
+		if (!resource) {
+			throw new NotFoundException();
+		}
 		if (resource.userId !== userId) {
 			throw new ForbiddenException();	
 		}
@@ -118,19 +122,22 @@ export const AuthService = {
 	/**
 	 * Fetches the user by their ID
 	 *  
-	 * @param {string} email Email
-	 * @param {string} password Password
+	 * @param {number} id User ID
 	 * 
 	 * @throws NotFoundException
 	 * 
-	 * @return {string} JWT token containing the user's information.
+	 * @return {User} User model containing their data.
 	 */
-	async getUser(id: number) {
+	async getUser(id: number): Promise<User> {
 		const user = await prisma.user.findUnique({
 			where: {
 				id
 			}
 		});
+
+		if (!user) {
+			throw new NotFoundException();
+		}
 		return user;
 	},
 
