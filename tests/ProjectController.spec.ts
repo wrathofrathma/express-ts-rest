@@ -75,7 +75,7 @@ test.group('ProjectController', (group) => {
 		.then(async ({body}) => {
 			expect(body).toMatchObject({
 				title: created_project_title,
-				userId: user.id
+				userId: 200
 			});
 			done();
 		});
