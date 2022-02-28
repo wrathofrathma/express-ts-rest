@@ -12,6 +12,8 @@ router.use(AuthMiddleware);
 
 router.get('/', ProjectController.index);
 router.post('/', ProjectController.create);
+router.patch('/:id', ProjectController.update);
+router.delete('/:id', ProjectController.delete);
 
 // Export the router
 export default router;

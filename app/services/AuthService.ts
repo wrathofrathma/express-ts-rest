@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { config } from '../../config';
 import UnprocessableEntity from '../exceptions/UnprocessableEntityException';
 import NotFoundException from '../exceptions/NotFoundException';
+import ForbiddenException from '../exceptions/ForbiddenException';
 
 const prisma = new PrismaClient()
 
@@ -97,6 +98,24 @@ export const AuthService = {
 	},
 
 	/**
+	 * Verifies the user has access to the given object.
+	 *  
+	 * @param {string} email Email
+	 * @param {string} password Password
+	 * 
+	 * @throws ForbiddenException
+	 * 
+	 * @return {string} JWT token containing the user's information.
+	 */
+	verifyPermissions(resource, userId: number) {
+		if (resource.userId !== userId) {
+			throw new ForbiddenException();	
+		}
+
+		return true;
+	},
+
+	/**
 	 * Fetches the user by their ID
 	 *  
 	 * @param {string} email Email
@@ -113,5 +132,6 @@ export const AuthService = {
 			}
 		});
 		return user;
-	}
+	},
+
 }
