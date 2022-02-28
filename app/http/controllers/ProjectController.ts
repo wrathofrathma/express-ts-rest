@@ -69,13 +69,18 @@ export const ProjectController = {
 		// Fetch the user from the request.
 		const user = req.user;
 
-		res.send(await ProjectService.update(
-			project_id,
-			user.id,
-			{
-				title
-			}
-		));
+		try {
+			res.send(await ProjectService.update(
+				project_id,
+				user.id,
+				{
+					title
+				}
+			));
+		}
+		catch (e) {
+			next(e);
+		}
 
 
 		return next();
