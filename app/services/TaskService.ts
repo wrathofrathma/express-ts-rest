@@ -58,4 +58,38 @@ export const TaskService = {
 			}
 		});
 	},
+
+	/**
+	 * Updates a given task
+	 * 
+	 * @param {number} id Task ID
+	 * @param {{description: string}} payload Update data
+	 * 
+	 * @return {Promise<Task>}
+	 */
+	async update(id: number, payload: { description: string}): Promise<Task> {
+		const { description } = payload;
+
+		return await prisma.task.update({
+			where: {
+				id
+			},
+			data: {
+				description
+			}
+		})
+	},
+
+	/**
+	 * Deletes a given task
+	 * 
+	 * @param {number} id Task ID
+	 */
+	async delete(id: number): Promise<Task> {
+		return await prisma.task.delete({
+			where: {
+				id
+			}
+		});
+	},
 }

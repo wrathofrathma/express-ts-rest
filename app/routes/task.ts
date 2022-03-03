@@ -10,8 +10,8 @@ const router = express.Router();
 // All of our requests should be authenticated.
 router.use(AuthMiddleware);
 
-// router.patch('/:id', TaskController.update);
-// router.delete('/:id', TaskController.delete);
+router.patch('/:id', TaskController.update);
+router.delete('/:id', TaskController.delete);
 
 // Export the router
 export default router;
