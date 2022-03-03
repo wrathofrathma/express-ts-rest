@@ -75,7 +75,7 @@ export const ProjectController = {
 			res.send(project);
 		}
 		catch (e) {
-			next(e);
+			return next(e);
 		}
 
 		return next();

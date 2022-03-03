@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import e, { NextFunction, Request, Response } from "express";
 import UnprocessableEntityException from "../../exceptions/UnprocessableEntityException";
 import { ProjectService } from "../../services/ProjectService";
 import { TaskService } from "../../services/TaskService";
@@ -56,5 +56,68 @@ export const TaskController = {
 		res.send(task);
 
 		return next();
+	},
+
+	/**
+	 * Handles the PATCH request on /tasks/:id and updates the task
+	 * 
+	 * @param req {Request} Express request object
+	 * @param res {Response} Express response object
+	 * @param next {NextFunction} Express NextFunction (used for middleware)
+	 */
+	async update(req: Request, res: Response, next: NextFunction) {
+		// Fetch parameters from the body.
+		const { description }  = req.body;
+
+		// Fetch the user from the request.
+		const user = req.user;
+
+		// Fetch the task's id 
+		const taskId = parseInt(req.params.id);
+
+		try {
+			// Validate permissions
+			await TaskService.verifyPermission(taskId, user.id);
+
+			// Update the task 
+			const task = await TaskService.update(taskId, {description})
+
+			res.send(task);
+		}
+		catch (e) {
+			return next(e);
+		}
+
+		return next();
+	},
+
+	/**
+	 * Handles the DELETE request on /tasks/:id to delete a task
+	 * 
+	 * @param req {Request} Express request object
+	 * @param res {Response} Express response object
+	 * @param next {NextFunction} Express NextFunction (used for middleware)
+	 */
+	async delete(req: Request, res: Response, next: NextFunction) {
+		// Fetch the user from the request.
+		const user = req.user;
+
+		// Fetch the task id 
+		const taskId = parseInt(req.params.id);
+
+		try {
+			// Validate permissions
+			await TaskService.verifyPermission(taskId, user.id);
+
+			// Delete the task
+			const task = await TaskService.delete(taskId);
+
+			res.send(task);
+
+			return next();
+		}
+		catch (e) {
+			return next(e);
+		}
 	},
 }
