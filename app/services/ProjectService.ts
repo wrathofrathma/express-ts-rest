@@ -1,12 +1,34 @@
 import { PrismaClient, Project } from '@prisma/client'
+import ForbiddenException from '../exceptions/ForbiddenException';
 import NotFoundException from '../exceptions/NotFoundException';
-import { AuthService } from './AuthService';
 const prisma = new PrismaClient()
 
 /**
  * Project service to handle CRUD operations on projects.
  */
 export const ProjectService = {
+	/**
+	 * Verify user has access to a given project.
+	 * 
+	 * @param {number} id Project ID
+	 * @param {number} userId  User ID
+	 */
+	async verifyPermission(id: number, userId: number): Promise<void> {
+		const project = await prisma.project.findUnique({
+			where: {
+				id
+			}
+		});
+		
+		if (!project) {
+			throw new NotFoundException();
+		}
+
+		if (project.userId !== userId) {
+			throw new ForbiddenException();
+		}
+	},
+
 	/**
 	 * Create a new project for a user
 	 * 
@@ -48,7 +70,7 @@ export const ProjectService = {
 	 * 
 	 * @throws NotFoundException
 	 */
-	async update(id: number, userId: number, payload: { title: string}): Promise<Project> {
+	async update(id: number, payload: { title: string}): Promise<Project> {
 		// Find the project
 		const project = await prisma.project.findUnique({
 			where: {
@@ -60,9 +82,6 @@ export const ProjectService = {
 		if (!project) {
 			throw new NotFoundException();
 		}
-
-		// Verify the user has permissions to alter this resource
-		AuthService.verifyPermissions(project, userId);
 
 		// If that didn't throw, then we're free to update the project.
 		const {title} = payload;
@@ -85,7 +104,7 @@ export const ProjectService = {
 	 * 
 	 * @throws NotFoundException
 	 */
-	async delete(id: number, userId: number): Promise<Project> {
+	async delete(id: number): Promise<Project> {
 		// Find the project
 		const project = await prisma.project.findUnique({
 			where: {
@@ -98,16 +117,11 @@ export const ProjectService = {
 			throw new NotFoundException();
 		}
 
-		// Verify the user has permissions to alter this resource
-		AuthService.verifyPermissions(project, userId);
-
 		// If that didn't throw, then we're free to delete the project.
-		await prisma.project.delete({
+		return await prisma.project.delete({
 			where: {
 				id
 			}
 		});
-
-		return project;
 	}
 }

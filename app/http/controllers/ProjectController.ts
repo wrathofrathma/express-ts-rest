@@ -1,8 +1,5 @@
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
 import { NextFunction, Request, Response } from "express";
 import UnprocessableEntityException from "../../exceptions/UnprocessableEntityException";
-import { AuthService } from "../../services/AuthService";
 import { ProjectService } from "../../services/ProjectService";
 
 /**
@@ -63,25 +60,23 @@ export const ProjectController = {
 		if (!title) {
 			return next(new UnprocessableEntityException())
 		}
+
 		// Fetch project id
-		const project_id = parseInt(req.params.id);
+		const projectId = parseInt(req.params.id);
 
 		// Fetch the user from the request.
 		const user = req.user;
 
 		try {
-			res.send(await ProjectService.update(
-				project_id,
-				user.id,
-				{
-					title
-				}
-			));
+			// Verify permissions
+			await ProjectService.verifyPermission(projectId, user.id);
+
+			const project = await ProjectService.update(projectId, {title});
+			res.send(project);
 		}
 		catch (e) {
 			next(e);
 		}
-
 
 		return next();
 	},
@@ -95,13 +90,17 @@ export const ProjectController = {
 	 */
 	async delete(req: Request, res: Response, next: NextFunction) {
 		// Fetch the id parameter from the request
-		const project_id = parseInt(req.params.id);
+		const projectId = parseInt(req.params.id);
 
 		// Fetch the user from the request.
 		const user = req.user;
 
+
 		try {
-			res.send(await ProjectService.delete(project_id, user.id));
+			// Verify permissions
+			await ProjectService.verifyPermission(projectId, user.id);
+
+			res.send(await ProjectService.delete(projectId));
 			return next();
 		}
 		catch (e) {

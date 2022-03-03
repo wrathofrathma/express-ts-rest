@@ -103,7 +103,7 @@ test.group('ProjectService', (group) => {
 		}
 	});
 
-	const updated_project = await ProjectService.update(project.id, user.id, {
+	const updated_project = await ProjectService.update(project.id, {
 		title: updated_project_title
 	});
 
@@ -120,8 +120,6 @@ test.group('ProjectService', (group) => {
 			email: existing_email
 		}
 	});
-	// Create a fake user id
-	const userId = 4123;
 
 	// Fetch an existing project
 	const project = await prisma.project.findFirst({
@@ -132,7 +130,7 @@ test.group('ProjectService', (group) => {
 	});
 
 	try {
-		await ProjectService.update(project.id, userId, {
+		await ProjectService.update(project.id, {
 			title: updated_project_title
 		});
 	}
@@ -142,17 +140,11 @@ test.group('ProjectService', (group) => {
   })
 
   test('Update Project Title: Not Found', async ({expect}) => {
-	// Fetch user data that has an existing project.
-	const user = await prisma.user.findUnique({
-		where: {
-			email: existing_email
-		}
-	});
 	// Create a fake project id
 	const projectId = 4123;
 
 	try {
-		await ProjectService.update(projectId, user.id, {
+		await ProjectService.update(projectId, {
 			title: updated_project_title
 		});
 	}
@@ -161,50 +153,18 @@ test.group('ProjectService', (group) => {
 	}
   });
 
-  test('Delete Project: Not Authenticated', async ({expect}) => {
-	// Fetch user data that has an existing project.
-	const user = await prisma.user.findUnique({
-		where: {
-			email: existing_email
-		}
-	});
-	// Create a fake user id
-	const userId = 4123;
-
-	// Fetch an existing project
-	const project = await prisma.project.findFirst({
-		where: {
-			userId: user.id,
-			title: updated_project_title
-		}
-	});
-
-	try {
-		await ProjectService.delete(project.id, userId); 
-	}
-	catch (e) {
-		expect(e).toBeInstanceOf(ForbiddenException);
-	}
-  });
-
-  test('Delete Project: Not Found', async ({expect}) => {
-	// Fetch user data that has an existing project.
-	const user = await prisma.user.findUnique({
-		where: {
-			email: existing_email
-		}
-	});
+  test('Delete Project: Not Found', async ({expect}, done: Function) => {
 	// Create a fake project id
 	const projectId = 4123;
 
 	try {
-		await ProjectService.delete(projectId, user.id);
+		await ProjectService.delete(projectId);
 	}
 	catch (e) {
 		expect(e).toBeInstanceOf(NotFoundException);
+		done();
 	}
-
-  });
+  }).waitForDone();
 
   test('Delete Project', async ({expect}) => {
 	// Fetch user data
@@ -222,7 +182,7 @@ test.group('ProjectService', (group) => {
 		}
 	});
 
-	const deleted_project = await ProjectService.delete(project.id, user.id);
+	const deleted_project = await ProjectService.delete(project.id);
 
 	expect(deleted_project).toMatchObject(project);
   });

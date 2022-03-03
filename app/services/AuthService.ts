@@ -98,28 +98,6 @@ export const AuthService = {
 	},
 
 	/**
-	 * Verifies the user has access to the given object.
-	 *  
-	 * @param {object} resource Resource object from the database. 
-	 * @param {number} userId User id of who made the request.
-	 * 
-	 * @throws ForbiddenException
-	 * @throws NotFoundException 
-	 * 
-	 * @return {Boolean} True if it succeeds.
-	 */
-	verifyPermissions(resource: { userId: number }, userId: number): Boolean {
-		if (!resource) {
-			throw new NotFoundException();
-		}
-		if (resource.userId !== userId) {
-			throw new ForbiddenException();	
-		}
-
-		return true;
-	},
-
-	/**
 	 * Fetches the user by their ID
 	 *  
 	 * @param {number} id User ID
